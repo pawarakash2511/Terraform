@@ -1,0 +1,63 @@
+name: CloudWatch Kinesis S3 Deploy
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "apply or destroy"
+        required: true
+        default: "apply"
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.6.6
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-south-1
+
+      - name: Terraform Init
+        working-directory: ./kinesis_log
+        run: terraform init
+
+      # ✅ Plan only for apply
+      - name: Terraform Plan
+        if: github.event.inputs.action == 'apply'
+        working-directory: ./kinesis_log
+        run: terraform plan
+        env:
+          TF_VAR_s3_bucket_name: ${{ secrets.KINESIS_S3_BUCKET_NAME }}
+
+      - name: Terraform Apply
+        id: apply
+        if: github.event.inputs.action == 'apply'
+        working-directory: ./kinesis_log
+        run: terraform apply -auto-approve
+        env:
+          TF_VAR_s3_bucket_name: ${{ secrets.KINESIS_S3_BUCKET_NAME }}
+
+      # ✅ Destroy when explicitly requested
+      - name: Terraform Destroy (manual)
+        if: github.event.inputs.action == 'destroy'
+        working-directory: ./kinesis_log
+        run: terraform destroy -auto-approve
+        env:
+          TF_VAR_s3_bucket_name: ${{ secrets.KINESIS_S3_BUCKET_NAME }}
+
+      # 🔥 Destroy ONLY if apply fails (and only in apply mode)
+      - name: Terraform Destroy (on failure)
+        if: failure() && github.event.inputs.action == 'apply'
+        working-directory: ./kinesis_log
+        run: terraform destroy -auto-approve
+        env:
+          TF_VAR_s3_bucket_name: ${{ secrets.KINESIS_S3_BUCKET_NAME }}
