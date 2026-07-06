@@ -9,6 +9,14 @@ terraform {
       version = "~> 5.0"
     }
   }
+
+  backend "s3" {
+    bucket         = "cwlogs-tfstate-112401921931"
+    key            = "kinesis_log/terraform.tfstate"
+    region         = "ap-south-1"
+    dynamodb_table = "cwlogs-tf-lock"
+    encrypt        = true
+  }
 }
 
 provider "aws" {
