@@ -11,11 +11,12 @@ terraform {
   }
 
   backend "s3" {
-    bucket         = "cwlogs-tfstate-112401921931"
-    key            = "kinesis_log/terraform.tfstate"
-    region         = "ap-south-1"
-    dynamodb_table = "cwlogs-tf-lock"
-    encrypt        = true
+    key     = "kinesis_log/terraform.tfstate"
+    region  = "ap-south-1"
+    encrypt = true
+    # bucket + dynamodb_table are account-specific and supplied at
+    # `terraform init` time — see backend.hcl.example and the README's
+    # "Remote state backend setup" section.
   }
 }
 

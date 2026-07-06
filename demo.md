@@ -64,25 +64,27 @@ correct and complete.
 **Before running the demo on the client's AWS account, two things carry
 over from account to account and need re-pointing:**
 
-1. **IAM permissions** for whatever identity runs Terraform (the client's
-   IAM user, or GitHub Actions' credentials) need to cover: S3 (bucket
-   create/lifecycle), Kinesis (stream create), IAM (create the two service
-   roles), CloudWatch Logs (log group/stream/subscription filter), and
-   Firehose (delivery stream create) — the full action list worked out
-   during testing is available on request and can be hardened over to the
-   client's account directly.
-2. **The state backend bucket/table are account-specific.** The current
-   `backend "s3"` block in `main.tf` points at a bucket named
-   `cwlogs-tfstate-112401921931` — `112401921931` is the *test* account's
-   ID, and S3 bucket names are globally unique across all of AWS, so this
-   exact name can't be reused on the client's account. Before deploying
-   there:
-   - Create an equivalent state bucket + DynamoDB lock table in the
-     client's account (same steps as before — versioned, encrypted,
-     public-access-blocked bucket; a `LockID`-keyed DynamoDB table).
-   - Update the `bucket` (and optionally `key`/`dynamodb_table`) values in
-     `main.tf`'s `backend "s3" {}` block to match.
-   - Re-run `terraform init -reconfigure` once updated.
+**As of the latest commit, neither of these requires editing `main.tf`** —
+the backend is now account-portable (partial backend config) and the IAM
+policy ships as a ready-to-fill-in file, so this is now just configuration,
+not code changes:
+
+1. **IAM permissions** — fill in the placeholders in
+   `permissions/terraform-deploy-policy.json` (account ID, region, state
+   bucket/table names) and attach it to whatever identity runs Terraform,
+   per `permissions/README.md`. Covers every action this module and its
+   state backend need.
+2. **State backend bucket/table are account-specific, but no longer
+   hardcoded.** `kinesis_log/main.tf`'s `backend "s3" {}` block only fixes
+   region/key/encryption; the bucket and DynamoDB table names are supplied
+   externally. Before deploying to the client's account:
+   - Bootstrap an equivalent state bucket + DynamoDB lock table there (see
+     README "Remote state backend setup" for the exact commands).
+   - Copy `kinesis_log/backend.hcl.example` → `backend.hcl`, fill in the new
+     bucket/table names (local runs), or set the `TF_STATE_BUCKET` /
+     `TF_STATE_DYNAMODB_TABLE` GitHub secrets (CI runs).
+   - Run `terraform init -reconfigure` (local) — CI picks it up
+     automatically on the next `kinesis-deploy.yml` run.
 
 ## How the demo will run (once pointed at the client account)
 

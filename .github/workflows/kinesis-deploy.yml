@@ -28,7 +28,10 @@ jobs:
 
       - name: Terraform Init
         working-directory: ./kinesis_log
-        run: terraform init
+        run: |
+          terraform init \
+            -backend-config="bucket=${{ secrets.TF_STATE_BUCKET }}" \
+            -backend-config="dynamodb_table=${{ secrets.TF_STATE_DYNAMODB_TABLE }}"
 
       # ✅ Plan only for apply
       - name: Terraform Plan
