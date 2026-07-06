@@ -1,0 +1,15 @@
+aws_region                = "ap-south-1"
+name_prefix                = "myapp-prod"
+s3_bucket_name              = "myapp-prod-logs-archive-2026" # must be globally unique
+cloudwatch_log_group_name  = "/ecs/myapp-prod"
+log_filter_pattern          = "" # "" = all events, or e.g. "ERROR" to only ship errors
+kinesis_shard_count         = 1
+firehose_buffer_size_mb     = 5
+firehose_buffer_interval_seconds = 300
+log_retention_days          = 90
+
+tags = {
+  Project     = "myapp"
+  Environment = "prod"
+  ManagedBy   = "terraform"
+}
