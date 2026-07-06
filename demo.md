@@ -34,11 +34,11 @@ land in S3) — that test script doubles as the live demo script.
 
 ## What's been verified so far
 
-- **Config correctness**: `terraform init` / `validate` / `plan` all run
-  cleanly — 11 resources plan to create with 0 errors (S3 bucket +
-  lifecycle, Kinesis stream, both IAM roles + policies, CloudWatch Logs
-  subscription filter, Firehose delivery stream, Firehose's own error-log
-  group/stream).
+- **Config correctness**: `terraform fmt` / `init` / `validate` / `plan` all
+  run cleanly — no errors, no warnings — 11 resources plan to create (S3
+  bucket + lifecycle, Kinesis stream, both IAM roles + policies, CloudWatch
+  Logs subscription filter, Firehose delivery stream, Firehose's own
+  error-log group/stream).
 - **Remote state backend added**: `main.tf` now has a `backend "s3" {}`
   block (S3 bucket + DynamoDB lock table) instead of relying on whatever
   disk happens to run `terraform apply`. This matters operationally: without
