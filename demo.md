@@ -27,10 +27,12 @@ can only read that stream and write to its own S3 bucket. Failed Firehose
 deliveries land under a separate `errors/` prefix in S3 instead of
 disappearing silently.
 
-See `README.md` for cost drivers and tuning knobs, and
-`EXPLANATION_AND_USAGE.md` for a block-by-block walkthrough of `main.tf`
-plus the exact manual test script (push a fake log line, watch a `.gz` file
-land in S3) — that test script doubles as the live demo script.
+See `README.md` for cost drivers and tuning knobs, `EXPLANATION_AND_USAGE.md`
+for a block-by-block walkthrough of `main.tf`, and
+[`end-to-end.md`](end-to-end.md) for the full operational runbook — manual
+vs. Terraform-created resources, running the pipeline, the exact dummy-log
+test procedure, checking S3, troubleshooting, and teardown. That test
+procedure doubles as the live demo script.
 
 ## What's been verified so far
 

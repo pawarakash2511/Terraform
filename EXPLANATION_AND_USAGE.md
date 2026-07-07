@@ -153,6 +153,10 @@ The actual consumer. Key settings:
 
 # Usage — how to test this without real application logs
 
+See [`end-to-end.md`](end-to-end.md) for the full operational runbook
+(including a Windows/Command Prompt version of this same test). This
+section is the bash/Linux version.
+
 Since you don't have an app writing logs yet, you need to **manufacture a
 fake log group and push test log lines into it manually.** Here's the
 complete test flow:

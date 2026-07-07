@@ -78,8 +78,15 @@ default Actions template, not part of the real deploy path.
 ### Docs map
 - `README.md` — architecture rationale, usage, cost/tuning notes, full
   remote-state-backend setup instructions.
-- `EXPLANATION_AND_USAGE.md` — line-by-line `main.tf` walkthrough plus the
-  manual end-to-end test script (this doubles as the client demo script).
+- `end-to-end.md` — the operational runbook: why/how this exists, manual
+  vs. Terraform-created resources (with exact commands for the manual ones),
+  running the pipeline, the dummy-log test procedure (Command Prompt),
+  checking S3, troubleshooting, and full destroy/teardown including what
+  `terraform destroy` does *not* clean up. Start here for actually operating
+  this pipeline end to end.
+- `EXPLANATION_AND_USAGE.md` — line-by-line `main.tf` walkthrough (the
+  bash/Linux version of the test script now lives here; `end-to-end.md` has
+  the Windows/cmd version).
 - `demo.md` — client-facing status/handoff doc: what's been verified, and
   what still needs pointing at the client's own AWS account before a live
   demo there.
@@ -99,4 +106,17 @@ default Actions template, not part of the real deploy path.
   "/aws/..."` silently gets rewritten into a Windows path and fails with a
   confusing `InvalidParameterException`. Set `MSYS_NO_PATHCONV=1` before AWS
   CLI calls involving CloudWatch Logs group names (or anything else starting
-  with `/`).
+  with `/`), or just use Command Prompt/PowerShell instead.
+- **CI `terraform init` fails with `Error: Invalid Value ... cannot be empty
+  or all whitespace`** when `TF_STATE_BUCKET`/`TF_STATE_DYNAMODB_TABLE`
+  GitHub secrets are unset — the `-backend-config="bucket=${{ secrets.X }}"`
+  interpolation resolves to an empty string. Happened for real switching to
+  a second test account: the secrets simply hadn't been created yet for
+  that repo.
+- **`terraform destroy` fails with `BucketNotEmpty`** if the destination S3
+  bucket still has log objects in it — `aws_s3_bucket.log_destination` has
+  `force_destroy = false`. Empty the bucket first (`aws s3 rm s3://<bucket>
+  --recursive`), then destroy. See `end-to-end.md` section 8 for the full
+  destroy order (state backend and the source log group are never touched
+  by `terraform destroy` — they must be cleaned up manually, and only after
+  destroy succeeds).

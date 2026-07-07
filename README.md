@@ -50,6 +50,11 @@ S3 Bucket (gzip'd, partitioned by date)
 4. `terraform plan`
 5. `terraform apply`
 
+For the full operational runbook — manual vs. Terraform-created resources
+with exact commands, running the CI pipeline, testing with a dummy log
+line, checking S3, troubleshooting, and safe teardown — see
+[`end-to-end.md`](end-to-end.md).
+
 ## Remote state backend setup
 
 Terraform state for this module is stored in S3 (with DynamoDB locking),
