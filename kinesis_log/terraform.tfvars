@@ -1,4 +1,4 @@
-aws_region  = "ap-south-1"
+aws_region  = "eu-west-2"
 name_prefix = "cwlogs"
 
 cloudwatch_log_group_name = "/test/kinesis-pipeline"

@@ -12,7 +12,7 @@ terraform {
 
   backend "s3" {
     key     = "kinesis_log/terraform.tfstate"
-    region  = "ap-south-1"
+    region  = "eu-west-2"
     encrypt = true
     # bucket + dynamodb_table are account-specific and supplied at
     # `terraform init` time — see backend.hcl.example and the README's
