@@ -87,9 +87,9 @@ default Actions template, not part of the real deploy path.
 - `EXPLANATION_AND_USAGE.md` — line-by-line `main.tf` walkthrough (the
   bash/Linux version of the test script now lives here; `end-to-end.md` has
   the Windows/cmd version).
-- `demo.md` — client-facing status/handoff doc: what's been verified, and
-  what still needs pointing at the client's own AWS account before a live
-  demo there.
+- `getting-started.md` — deployment status/checklist doc: what's been
+  verified, and what still needs pointing at your own AWS account before a
+  live run there.
 - `permissions/README.md` — how to fill in and attach the IAM policy.
 
 ## Gotchas learned the hard way

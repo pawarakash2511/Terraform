@@ -11,8 +11,8 @@ test account — swap them for whatever account you're actually pointed at.
 
 ## 1. Why we're doing this
 
-The client needs application logs (currently sitting in CloudWatch Logs)
-archived somewhere durable and queryable, without paying for a full logging
+Application logs currently sitting in CloudWatch Logs need to be archived
+somewhere durable and queryable, without paying for a full logging
 platform. This pipeline streams every log event out of a CloudWatch Log
 Group and lands it, gzip'd and partitioned by date, in S3 — cheaply, in
 near-real-time, with automatic expiry so storage doesn't grow forever.

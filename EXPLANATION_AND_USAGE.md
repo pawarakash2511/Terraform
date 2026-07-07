@@ -51,7 +51,7 @@ resource "aws_kinesis_stream" "log_stream" { ... }
 
 This is the "pipe" CloudWatch Logs writes into. Key settings:
 - `shard_count = 1` — one shard handles up to 1MB/sec or 1000 records/sec
-  coming in. Bump this if the client's log volume is high.
+  coming in. Bump this if your log volume is high.
 - `retention_period = 24` (hours) — how long the stream itself holds data
   for replay, separate from the S3 retention above. This is short-term
   buffer, not long-term storage.
@@ -248,7 +248,7 @@ Check, in this order:
    `aws kinesis get-shard-iterator` + `aws kinesis get-records` to read
    directly from the shard
 
-### Step 7 — Reset buffer settings before handing off to the client
+### Step 7 — Reset buffer settings for production use
 
 Once you've confirmed it works end-to-end, put `firehose_buffer_size_mb`
 and `firehose_buffer_interval_seconds` back to sensible production values
@@ -261,5 +261,4 @@ files than you'd want in production, which costs more in S3 PUT requests.
 aws logs delete-log-group --log-group-name /test/kinesis-pipeline
 ```
 Then either destroy the whole test stack (`terraform destroy`) or just
-repoint `cloudwatch_log_group_name` at the client's real log group and
-re-apply.
+repoint `cloudwatch_log_group_name` at your real log group and re-apply.

@@ -102,7 +102,7 @@ full policy the deploying identity (local user or CI credentials) needs —
 covers the state backend plus every resource this module creates. Fill in
 the placeholders and attach it as documented in `permissions/README.md`.
 
-## Notes for the client
+## Cost & Tuning Notes
 
 - **Cost drivers**: Kinesis shard count (each shard ≈ $0.015/hour + $0.014
   per million PUT payload units), and Firehose (~$0.029 per GB ingested).
@@ -110,8 +110,8 @@ the placeholders and attach it as documented in `permissions/README.md`.
   usually enough — watch `IncomingBytes`/`IncomingRecords` CloudWatch
   metrics on the stream and scale shard count if you see throttling.
 - **Filter pattern**: leaving `log_filter_pattern` empty ships every log
-  event. If the client only cares about errors/warnings, set a filter
-  pattern (e.g. `"ERROR"` or a JSON metric filter) to cut ingestion cost.
+  event. If you only care about errors/warnings, set a filter pattern
+  (e.g. `"ERROR"` or a JSON metric filter) to cut ingestion cost.
 - **Buffering**: Firehose flushes to S3 either every
   `firehose_buffer_interval_seconds` or when `firehose_buffer_size_mb` is
   hit, whichever comes first. Shorter interval = fresher data in S3, more
