@@ -25,9 +25,10 @@ Real-time AWS security event detection: wires CloudTrail into CloudWatch
 Logs, adds metric filters + alarms for two scenarios (S3 bucket deletion,
 root account console login), and emails alerts via SNS. Split by AWS
 service area (`s3.tf`, `iam.tf`, `cloudtrail.tf`, `cloudwatch.tf`, `sns.tf`).
-Docs live alongside the code: start with
-[`terraform-cloudtrail-demo/README.md`](terraform-cloudtrail-demo/README.md),
-then [`terraform-cloudtrail-demo/END_TO_END.md`](terraform-cloudtrail-demo/END_TO_END.md)
+Docs: **[`terraform-cloudtrail-demo-docs/`](terraform-cloudtrail-demo-docs/)**
+— start with
+[`terraform-cloudtrail-demo-docs/README.md`](terraform-cloudtrail-demo-docs/README.md),
+then [`terraform-cloudtrail-demo-docs/END_TO_END.md`](terraform-cloudtrail-demo-docs/END_TO_END.md)
 for deploying/testing/tearing down.
 
 ## Shared conventions

@@ -6,10 +6,15 @@ email alerting, covering two concrete scenarios:
 1. **S3 Bucket Deletion** (`DeleteBucket` API call)
 2. **Root Account Console Login**
 
-For the full "why does each piece exist" walkthrough, see `GUIDE.md`. For
-running this end to end (deploying, testing both scenarios, verifying,
+For the full "why does each piece exist" walkthrough, see `GUIDE.md`. For a
+file-by-file explanation of every `.tf` file, see `EXPLANATION_AND_USAGE.md`.
+For running this end to end (deploying, testing both scenarios, verifying,
 tearing down), see `END_TO_END.md`. This file covers architecture, layout,
 and a quick local run.
+
+The Terraform code itself lives one level up, in `../terraform-cloudtrail-demo/`
+— this doc folder mirrors `Kinesis_doc/` and `Terra_example_doc/`, one doc
+folder per example root.
 
 ---
 
@@ -91,7 +96,7 @@ alert.
 ## 4. Folder Structure
 
 ```
-terraform-cloudtrail-demo/
+terraform-cloudtrail-demo/            # the Terraform code
 ├── versions.tf                  # Terraform & provider version constraints
 ├── provider.tf                  # AWS provider config + account/region data sources
 ├── backend.tf                   # Remote S3 + DynamoDB state backend (partial config)
@@ -105,9 +110,12 @@ terraform-cloudtrail-demo/
 ├── cloudtrail.tf                # The trail itself + its CloudWatch Log Group
 ├── cloudwatch.tf                # Metric filters + alarms for both scenarios
 ├── sns.tf                       # SNS topic, topic policy, email subscriptions
-├── outputs.tf                   # Post-apply outputs for verification/handoff
-├── README.md                    # This file
+└── outputs.tf                   # Post-apply outputs for verification/handoff
+
+terraform-cloudtrail-demo-docs/       # this folder — all documentation
+├── README.md                    # This file — architecture, layout, quick local run
 ├── GUIDE.md                     # Concept-by-concept explanation of why each piece exists
+├── EXPLANATION_AND_USAGE.md     # File-by-file walkthrough of every .tf file
 └── END_TO_END.md                # Full operational runbook: deploy, test, verify, destroy
 ```
 
@@ -154,6 +162,12 @@ state file separate from the other two in the same bucket. Copy
 ---
 
 ## 7. Deployment Steps (local)
+
+Run these from the code folder, `terraform-cloudtrail-demo/` (one level up
+from this doc folder):
+```bash
+cd ../terraform-cloudtrail-demo
+```
 
 ### 7.1 Configure variables
 ```bash

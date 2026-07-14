@@ -50,9 +50,9 @@ validate`/`plan`, and end-to-end behavior via manual test procedures:
 gzip'd file lands in S3 within one buffer interval); `Terra_example`'s in
 `Terra_example_doc/README.md` (apply, then SSH into the instance using the
 Terraform-generated key); `terraform-cloudtrail-demo`'s in
-`terraform-cloudtrail-demo/END_TO_END.md` (trigger a real S3 `DeleteBucket`
-event or a root console login, confirm the CloudWatch alarm fires and an
-email arrives).
+`terraform-cloudtrail-demo-docs/END_TO_END.md` (trigger a real S3
+`DeleteBucket` event or a root console login, confirm the CloudWatch alarm
+fires and an email arrives).
 
 ## Architecture
 
@@ -136,7 +136,7 @@ the other two workflows (manual `workflow_dispatch`, single `action`
 apply/destroy input, auto-destroy on apply failure); it needs one extra
 secret beyond the four shared ones: `ALARM_NOTIFICATION_EMAILS`. Testing
 both scenarios is deliberately a manual, documented step
-(`terraform-cloudtrail-demo/END_TO_END.md`), not automated in CI — root
+(`terraform-cloudtrail-demo-docs/END_TO_END.md`), not automated in CI — root
 login specifically cannot be triggered by a CI credential at all (requires
 an interactive root console sign-in), and automating the S3-bucket test
 would mean creating/deleting real infrastructure on every apply run.
@@ -162,15 +162,17 @@ AWS admin, but would need new statements added for a narrower identity.
 - `Terra_example_doc/README.md` — the VM example's equivalent: file layout,
   the data-source walkthrough, manual-vs-Terraform breakdown, running it,
   connecting over SSH, and destroy notes.
-- `terraform-cloudtrail-demo/README.md` — architecture, folder layout,
+- `terraform-cloudtrail-demo-docs/README.md` — architecture, folder layout,
   local deployment steps for the CloudTrail/CloudWatch/SNS example.
-- `terraform-cloudtrail-demo/GUIDE.md` — concept-by-concept explanation of
-  why each resource exists and what AWS does internally at each step.
-- `terraform-cloudtrail-demo/END_TO_END.md` — the operational runbook:
+- `terraform-cloudtrail-demo-docs/GUIDE.md` — concept-by-concept explanation
+  of why each resource exists and what AWS does internally at each step.
+- `terraform-cloudtrail-demo-docs/EXPLANATION_AND_USAGE.md` — file-by-file
+  walkthrough of every `.tf` file in `terraform-cloudtrail-demo/`.
+- `terraform-cloudtrail-demo-docs/END_TO_END.md` — the operational runbook:
   required secrets, manual-vs-Terraform breakdown, confirming the SNS
   subscription, triggering both test scenarios (bash + Windows Command
-  Prompt for the DeleteBucket one), CLI verification at each pipeline stage,
-  troubleshooting, and destroy/teardown.
+  Prompt/PowerShell for the DeleteBucket one), CLI verification at each
+  pipeline stage, troubleshooting, and destroy/teardown.
 - `permissions/README.md` — how to fill in and attach the IAM policy
   (currently `kinesis_log`-only, see above).
 - Root `README.md` — short index pointing into all three examples' docs.
