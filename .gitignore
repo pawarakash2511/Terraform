@@ -46,3 +46,40 @@ terraform.rc
 # Optional: ignore plan files saved before destroying Terraform configuration
 # Uncomment the line below if you want to ignore planout files.
 # planout
+
+# Local .terraform directories
+**/.terraform/*
+
+# Terraform lock file - team preference; many teams DO commit this.
+# Uncomment the next line to exclude it if your team decides not to commit it.
+# .terraform.lock.hcl
+
+# Terraform state files - NEVER commit state, it can contain sensitive values
+*.tfstate
+*.tfstate.*
+*.tfstate.backup
+
+# Crash log files
+crash.log
+crash.*.log
+
+# Exclude real variable files that may contain sensitive/environment-specific data
+terraform.tfvars
+*.auto.tfvars
+
+# Ignore override files
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Ignore CLI configuration files
+.terraformrc
+terraform.rc
+
+# OS / editor noise
+.DS_Store
+*.swp
+.idea/
+.vscode/
+
