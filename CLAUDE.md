@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this repository is
 
-Two independent Terraform examples, each its own Terraform root:
+Three independent Terraform examples, each its own Terraform root:
 - `kinesis_log/` — a CloudWatch Logs → Kinesis Data Stream → Kinesis
   Firehose → S3 log-archiving pipeline, deliberately written as one big
   `main.tf`.
@@ -13,27 +13,34 @@ Two independent Terraform examples, each its own Terraform root:
   reading existing AWS state), deliberately split across the standard
   multi-file layout (`data.tf`, `variables.tf`, `outputs.tf`, `backend.tf`,
   `providers.tf`, `main.tf`) as a contrast to `kinesis_log`'s style.
+- `terraform-cloudtrail-demo/` — a CloudTrail → CloudWatch Logs → Metric
+  Filters → Alarms → SNS security-event alerting pipeline (S3 bucket
+  deletion and root-account console login detection), split by AWS service
+  area (`s3.tf`, `iam.tf`, `cloudtrail.tf`, `cloudwatch.tf`, `sns.tf`, plus
+  `versions.tf`/`provider.tf`/`variables.tf`/`locals.tf`/`outputs.tf`/
+  `backend.tf`, with `main.tf` kept as a file-map comment only).
 
-Both deploy via manual GitHub Actions workflows, not applied ad hoc as part
-of any other build, and share one remote state backend (same S3
+All three deploy via manual GitHub Actions workflows, not applied ad hoc as
+part of any other build, and share one remote state backend (same S3
 bucket/DynamoDB table, different state `key` per root).
 
 ## Commands
 
-Each example is its own Terraform root — `cd` into `kinesis_log/` or
-`Terra_example/` before running any of these.
+Each example is its own Terraform root — `cd` into `kinesis_log/`,
+`Terra_example/`, or `terraform-cloudtrail-demo/` before running any of
+these.
 
 - **Init** (first run, or after backend/provider changes): the backend is
   deliberately account-portable, so `bucket`/`dynamodb_table` are not
   committed — supply them at init time:
   `terraform init -backend-config=backend.hcl` (copy `backend.hcl.example`
   first), or explicit `-backend-config="bucket=..." -backend-config="dynamodb_table=..."` flags.
-  Both roots use the *same* bucket/table values — only the state `key`
+  All three roots use the *same* bucket/table values — only the state `key`
   differs (`kinesis_log/terraform.tfstate` vs.
-  `terra_example/terraform.tfstate`).
+  `terra_example/terraform.tfstate` vs. `sec-monitoring/terraform.tfstate`).
 - **Format check**: `terraform fmt -check -diff` (don't auto-fix unless asked — existing minor alignment diffs are known and left as-is).
 - **Validate**: `terraform validate`
-- **Plan**: `terraform plan` — `kinesis_log` requires `TF_VAR_s3_bucket_name` env var (see Architecture below for why it's not in tfvars); `Terra_example` needs no extra env vars.
+- **Plan**: `terraform plan` — `kinesis_log` requires `TF_VAR_s3_bucket_name` env var (see Architecture below for why it's not in tfvars); `Terra_example` needs no extra env vars; `terraform-cloudtrail-demo` requires `TF_VAR_alarm_notification_emails` (a `list(string)`, validated non-empty) or a `terraform.tfvars` with that key set.
 - **Apply / Destroy**: `terraform apply` / `terraform destroy`. These touch real, billable AWS resources; confirm with the user before running them directly rather than via the CI workflow.
 
 There is no unit test suite. Correctness is checked via `terraform
@@ -42,7 +49,10 @@ validate`/`plan`, and end-to-end behavior via manual test procedures:
 (push a fake log line into a throwaway CloudWatch log group, confirm a
 gzip'd file lands in S3 within one buffer interval); `Terra_example`'s in
 `Terra_example_doc/README.md` (apply, then SSH into the instance using the
-Terraform-generated key).
+Terraform-generated key); `terraform-cloudtrail-demo`'s in
+`terraform-cloudtrail-demo/END_TO_END.md` (trigger a real S3 `DeleteBucket`
+event or a root console login, confirm the CloudWatch alarm fires and an
+email arrives).
 
 ## Architecture
 
@@ -109,6 +119,31 @@ beyond the four already set up for `kinesis_log`.
 EC2/VPC actions — fine while the deploying identity is an AWS admin, but
 would need new statements added for a narrower identity.
 
+### `terraform-cloudtrail-demo/` — the third example
+Split by AWS service area rather than by file-per-responsibility like
+`Terra_example/`: `s3.tf` (CloudTrail's destination bucket — versioned,
+encrypted, public-access-blocked, lifecycle-ruled), `iam.tf` (the role
+CloudTrail assumes to write into CloudWatch Logs — separate from the S3
+bucket policy, which is a distinct authorization path), `cloudtrail.tf` (the
+trail itself + its CloudWatch Log Group, multi-region and global-service-events
+on, both required for the root-login scenario to be detected), `cloudwatch.tf`
+(two metric filter + alarm pairs — S3 `DeleteBucket` and root `ConsoleLogin`),
+`sns.tf` (topic + topic policy + one `aws_sns_topic_subscription` per email
+via `for_each`). State key `sec-monitoring/terraform.tfstate`, reusing the
+same shared backend bucket/table as the other two roots — no separate
+bootstrap. CI is `.github/workflows/cloudtrail-deploy.yml`, same shape as
+the other two workflows (manual `workflow_dispatch`, single `action`
+apply/destroy input, auto-destroy on apply failure); it needs one extra
+secret beyond the four shared ones: `ALARM_NOTIFICATION_EMAILS`. Testing
+both scenarios is deliberately a manual, documented step
+(`terraform-cloudtrail-demo/END_TO_END.md`), not automated in CI — root
+login specifically cannot be triggered by a CI credential at all (requires
+an interactive root console sign-in), and automating the S3-bucket test
+would mean creating/deleting real infrastructure on every apply run.
+`permissions/terraform-deploy-policy.json` does not cover this root's
+CloudTrail/CloudWatch/SNS actions — fine while the deploying identity is an
+AWS admin, but would need new statements added for a narrower identity.
+
 ### Docs map
 - `Kinesis_doc/README.md` — architecture rationale, usage, cost/tuning
   notes, full remote-state-backend setup instructions.
@@ -127,9 +162,18 @@ would need new statements added for a narrower identity.
 - `Terra_example_doc/README.md` — the VM example's equivalent: file layout,
   the data-source walkthrough, manual-vs-Terraform breakdown, running it,
   connecting over SSH, and destroy notes.
+- `terraform-cloudtrail-demo/README.md` — architecture, folder layout,
+  local deployment steps for the CloudTrail/CloudWatch/SNS example.
+- `terraform-cloudtrail-demo/GUIDE.md` — concept-by-concept explanation of
+  why each resource exists and what AWS does internally at each step.
+- `terraform-cloudtrail-demo/END_TO_END.md` — the operational runbook:
+  required secrets, manual-vs-Terraform breakdown, confirming the SNS
+  subscription, triggering both test scenarios (bash + Windows Command
+  Prompt for the DeleteBucket one), CLI verification at each pipeline stage,
+  troubleshooting, and destroy/teardown.
 - `permissions/README.md` — how to fill in and attach the IAM policy
   (currently `kinesis_log`-only, see above).
-- Root `README.md` — short index pointing into both doc folders.
+- Root `README.md` — short index pointing into all three examples' docs.
 
 ## Gotchas learned the hard way
 
@@ -159,3 +203,13 @@ would need new statements added for a narrower identity.
   destroy order (state backend and the source log group are never touched
   by `terraform destroy` — they must be cleaned up manually, and only after
   destroy succeeds).
+- **`terraform-cloudtrail-demo`'s SNS email subscription must be manually
+  confirmed** (click the link in AWS's "Subscription Confirmation" email)
+  or alerts silently never arrive — nothing in Terraform, the CloudWatch
+  console, or the alarm state indicates this is the problem; check
+  subscription status first (`aws sns list-subscriptions-by-topic`) when
+  "the alarm fired but no email showed up."
+- **`terraform-cloudtrail-demo`'s root-login scenario cannot be tested from
+  CI** — it requires an interactive AWS Console sign-in as the literal root
+  user (not an IAM admin), so it's deliberately left out of the automated
+  workflow and documented as a manual step only.

@@ -1,0 +1,23 @@
+# ---------------------------------------------------------------------------
+# terraform.tfvars.example
+#
+# Copy this file to terraform.tfvars and fill in real values.
+# terraform.tfvars is gitignored (see .gitignore) because it typically
+# contains environment-specific or sensitive values (e.g. real email
+# addresses) that should not be committed to version control.
+# ---------------------------------------------------------------------------
+
+project_name = "sec-monitoring"
+environment  = "dev"
+aws_region   = "eu-west-2"
+
+log_retention_days    = 90
+s3_log_retention_days = 365
+
+alarm_notification_emails = [
+  "security-team@example.com"
+]
+
+metric_alarm_period_seconds     = 60
+metric_alarm_evaluation_periods = 1
+metric_alarm_threshold          = 1
